@@ -3,7 +3,11 @@ package com.example.test;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
+import android.annotation.SuppressLint;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
@@ -16,7 +20,6 @@ import java.text.DecimalFormatSymbols;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Locale;
-
 
 
 public class MainActivity extends AppCompatActivity {
@@ -90,6 +93,53 @@ public class MainActivity extends AppCompatActivity {
         updateResult();
     }
 
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        SharedPreferences sharedPreferences = getSharedPreferences("CalculatorData", MODE_PRIVATE);
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        SharedPreferences sharedPreferences = getSharedPreferences("CalculatorData", MODE_PRIVATE);
+        textVisualInput.setText(sharedPreferences.getString("visualInput", "0"));
+        buttonClickHistory.clear();
+        String strTextVisualInput = textVisualInput.getText().toString();
+        for (int i = 0; i < strTextVisualInput.length(); i++) {
+            switch (strTextVisualInput.charAt(i)) {
+                case '0':
+                    buttonClickHistory.push(MenuButton.DIGIT_ZERO);
+                    break;
+                case '/':
+                    buttonClickHistory.push(MenuButton.OPERATOR_DIVIDE);
+                    break;
+                case '*':
+                case '+':
+                case '-':
+                    buttonClickHistory.push(MenuButton.OPERATOR);
+                    break;
+                case '(':
+                    openBracketsCounter++;
+                    buttonClickHistory.push(MenuButton.OPEN_BRACKET);
+                    break;
+                case ')':
+                    closeBracketsCounter++;
+                    buttonClickHistory.push(MenuButton.CLOSE_BRACKET);
+                    break;
+                case '.':
+                    buttonClickHistory.push(MenuButton.DOT);
+                    break;
+                default:
+                    buttonClickHistory.push(MenuButton.DIGIT);
+            }
+        }
+        updateMenu();
+
+        super.onResume();
+    }
 
 
     private void updateResult() {
@@ -105,7 +155,8 @@ public class MainActivity extends AppCompatActivity {
             if (str.charAt(i) == '.') {
                 result = false;
                 while (++i < str.length()) {
-                    if (str.charAt(i) == '+'  str.charAt(i) == '-'  str.charAt(i) == '*' || str.charAt(i) == '/') {
+                    if (str.charAt(i) == '+' str.charAt(i) == '-'
+                    str.charAt(i) == '*' || str.charAt(i) == '/'){
                         result = true;
                         break;
                     }
@@ -150,8 +201,7 @@ public class MainActivity extends AppCompatActivity {
                 if (openBracketsCounter > closeBracketsCounter && textVisualInput.getText().toString().length() > 1) {
                     closeBracket.setEnabled(true);
                     closeBracket.setTextColor(getColor(R.color.black));
-                }
-                else {
+                } else {
                     closeBracket.setEnabled(false);
                     closeBracket.setTextColor(getColor(R.color.transparency_black));
                 }
@@ -246,8 +296,7 @@ public class MainActivity extends AppCompatActivity {
                 if (openBracketsCounter > closeBracketsCounter) {
                     closeBracket.setEnabled(true);
                     closeBracket.setTextColor(getColor(R.color.black));
-                }
-                else {
+                } else {
                     closeBracket.setEnabled(false);
                     closeBracket.setTextColor(getColor(R.color.transparency_black));
                 }
@@ -293,8 +342,7 @@ public class MainActivity extends AppCompatActivity {
                 if (openBracketsCounter > closeBracketsCounter) {
                     closeBracket.setEnabled(true);
                     closeBracket.setTextColor(getColor(R.color.black));
-                }
-                else {
+                } else {
                     closeBracket.setEnabled(false);
                     closeBracket.setTextColor(getColor(R.color.transparency_black));
                 }
@@ -358,7 +406,37 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("SetTextI18n")
+    private void onButtonDigitClick(final int val) {
 
+        if (textResult.getText().toString().length() > 15
+        textVisualInput.getText().toString().length() >= 225)
+        return;
+
+        try {
+            if (val < 0 val > 9)
+            throw new IncorrectUseException("Unexpected value" + val + " in onButtonDigitClick");
+        } catch (IncorrectUseException e) {
+            e.printStackTrace();
+            System.exit(-10);
+        }
+
+        StringBuilder sb = new StringBuilder(textVisualInput.getText().toString());
+        if (val == 0 && sb.length() == 1 && sb.charAt(0) == '0')
+            return;
+        else if (sb.length() == 1 && sb.charAt(0) == '0')
+            sb.deleteCharAt(0);
+        sb.append(val);
+
+        textVisualInput.setText(sb.toString());
+
+        updateResult();
+        if (val == 0)
+            buttonClickHistory.push(MenuButton.DIGIT_ZERO);
+        else
+            buttonClickHistory.push(MenuButton.DIGIT);
+        updateMenu();
+    }
 
     public void onButtonDigit0Click(View view) {
         onButtonDigitClick(0);
@@ -401,6 +479,56 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @SuppressLint("SetTextI18n")
+    public void onButtonCalculatorPlusClick(View view) {
+        if (textResult.getText().toString().length() > 15 || textVisualInput.getText().toString().length() >= 225)
+            return;
+        textVisualInput.setText((textVisualInput.getText().toString()) + "+");
+        updateResult();
+        buttonClickHistory.push(MenuButton.OPERATOR);
+        updateMenu();
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void onButtonCalculatorMinusClick(View view) {
+        if (textResult.getText().toString().length() > 15 || textVisualInput.getText().toString().length() >= 225)
+            return;
+        textVisualInput.setText((textVisualInput.getText().toString()) + "-");
+        updateResult();
+        buttonClickHistory.push(MenuButton.OPERATOR);
+        updateMenu();
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void onButtonCalculatorMultiplyClick(View view) {
+        if (textResult.getText().toString().length() > 15 || textVisualInput.getText().toString().length() >= 225)
+            return;
+        textVisualInput.setText((textVisualInput.getText().toString()) + "*");
+        updateResult();
+        buttonClickHistory.push(MenuButton.OPERATOR);
+        updateMenu();
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void onButtonCalculatorDivideClick(View view) {
+        if (textResult.getText().toString().length() > 15 || textVisualInput.getText().toString().length() >= 225)
+            return;
+        textVisualInput.setText((textVisualInput.getText().toString()) + "/");
+        updateResult();
+        buttonClickHistory.push(MenuButton.OPERATOR_DIVIDE);
+        updateMenu();
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void onButtonCalculatorDotClick(View view) {
+        if (textResult.getText().toString().length() > 15 || textVisualInput.getText().toString().length() >= 225)
+            return;
+        textVisualInput.setText((textVisualInput.getText().toString()) + ".");
+        updateResult();
+        buttonClickHistory.push(MenuButton.DOT);
+        updateMenu();
+    }
+
     public void onButtonCalculatorClearClick(View view) {
         textVisualInput.setText("0");
         updateResult();
@@ -410,5 +538,72 @@ public class MainActivity extends AppCompatActivity {
         buttonClickHistory.push(MenuButton.DIGIT_ZERO);
         updateMenu();
     }
+
+    @SuppressLint("SetTextI18n")
+    public void onButtonCalculatorBackspaceClick(View view) {
+        StringBuilder sb = new StringBuilder(textVisualInput.getText().toString());
+        if (sb.length() == 1 && sb.charAt(0) == '0')
+            return;
+        else if (sb.length() == 1) {
+            buttonClickHistory.clear();
+            closeBracketsCounter = 0;
+            openBracketsCounter = 0;
+            buttonClickHistory.push(MenuButton.DIGIT_ZERO);
+            sb = new StringBuilder("0");
+            textVisualInput.setText(sb.toString());
+            updateResult();
+            updateMenu();
+            return;
+        }
+
+        sb.deleteCharAt(sb.length() - 1);
+        textVisualInput.setText(sb.toString());
+        updateResult();
+        MenuButton temp = buttonClickHistory.pop();
+        if (temp == MenuButton.OPEN_BRACKET)
+            openBracketsCounter--;
+        else if (temp == MenuButton.CLOSE_BRACKET)
+            closeBracketsCounter--;
+        updateMenu();
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void onButtonCalculatorOpenBracketClick(View view) {
+        if (textResult.getText().toString().length() > 15 || textVisualInput.getText().toString().length() >= 225)
+            return;
+        textVisualInput.setText((textVisualInput.getText().toString()) + "(");
+        openBracketsCounter++;
+        buttonClickHistory.push(MenuButton.OPEN_BRACKET);
+        updateResult();
+        updateMenu();
+    }
+
+    @SuppressLint("SetTextI18n")
+    public void onButtonCalculatorCloseBracketClick(View view) {
+        if (textResult.getText().toString().length() > 15 || textVisualInput.getText().toString().length() >= 225)
+            return;
+        textVisualInput.setText((textVisualInput.getText().toString()) + ")");
+        closeBracketsCounter++;
+        buttonClickHistory.push(MenuButton.CLOSE_BRACKET);
+        updateResult();
+        updateMenu();
+
+
+    }
+
+    public void onButtonCalculatorEqualClick(View view) {
+        if (textResult.getText().toString().equals("∞") || textResult.getText().toString().equals("NaN"))
+            textVisualInput.setText("0");
+        else
+            textVisualInput.setText(textResult.getText().toString());
+        buttonClickHistory.clear();
+        buttonClickHistory.push(MenuButton.DIGIT);
+        openBracketsCounter = 0;
+        closeBracketsCounter = 0;
+        updateResult();
+        updateMenu();
+    }
+
+
 
 }
