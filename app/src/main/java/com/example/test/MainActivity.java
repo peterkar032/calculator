@@ -1,5 +1,6 @@
 package com.example.test;
 
+import static com.example.test.Calculator.calculateExpression;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
@@ -155,8 +156,7 @@ public class MainActivity extends AppCompatActivity {
             if (str.charAt(i) == '.') {
                 result = false;
                 while (++i < str.length()) {
-                    if (str.charAt(i) == '+' str.charAt(i) == '-'
-                    str.charAt(i) == '*' || str.charAt(i) == '/'){
+                    if (str.charAt(i) == '+' || str.charAt(i) == '-' || str.charAt(i) == '*' || str.charAt(i) == '/'){
                         result = true;
                         break;
                     }
@@ -175,7 +175,6 @@ public class MainActivity extends AppCompatActivity {
             case DIGIT:
             case DIGIT_ZERO: {
                 digit0.setEnabled(true);
-                getTheme().resolveAttribute(R.attr.digitColor, typedValue, true);
                 digit0.setTextColor(ContextCompat.getColor(this, typedValue.resourceId));
                 digit1.setEnabled(true);
                 digit1.setTextColor(ContextCompat.getColor(this, typedValue.resourceId));
@@ -219,7 +218,6 @@ public class MainActivity extends AppCompatActivity {
                     dot.setEnabled(true);
                 else {
                     dot.setEnabled(false);
-                    getTheme().resolveAttribute(R.attr.digitTransparencyColor, typedValue, true);
                 }
                 dot.setTextColor(ContextCompat.getColor(this, typedValue.resourceId));
 
@@ -228,7 +226,6 @@ public class MainActivity extends AppCompatActivity {
             case OPERATOR:
             case OPEN_BRACKET: {
                 digit0.setEnabled(true);
-                getTheme().resolveAttribute(R.attr.digitColor, typedValue, true);
                 digit0.setTextColor(ContextCompat.getColor(this, typedValue.resourceId));
                 digit1.setEnabled(true);
                 digit1.setTextColor(ContextCompat.getColor(this, typedValue.resourceId));
@@ -409,14 +406,14 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("SetTextI18n")
     private void onButtonDigitClick(final int val) {
 
-        if (textResult.getText().toString().length() > 15
-        textVisualInput.getText().toString().length() >= 225)
+        if (textResult.getText().toString().length() > 15 || textVisualInput.getText().toString().length() >= 225)
         return;
 
         try {
-            if (val < 0 val > 9)
+            if (val < 0 || val > 9)
             throw new IncorrectUseException("Unexpected value" + val + " in onButtonDigitClick");
-        } catch (IncorrectUseException e) {
+        }
+        catch (IncorrectUseException e) {
             e.printStackTrace();
             System.exit(-10);
         }
