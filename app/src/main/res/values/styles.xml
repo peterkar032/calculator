@@ -19,7 +19,7 @@
         <item name="visualInputColor">@color/black</item>
         <item name="resultColor">@color/dark_silver</item>
         <item name="colorPrimaryDark">@color/white</item>
-
+        <item name="themeSwitcher">@drawable/theme_switcher_dark</item>
         <item name="neutralColor">@color/white</item>
     </style>
 
@@ -31,7 +31,7 @@
         <item name="visualInputColor">@color/white</item>
         <item name="resultColor">@color/light_silver</item>
         <item name="colorPrimaryDark">@color/black</item>
-
+        <item name="themeSwitcher">@drawable/theme_switcher_light</item>
         <item name="neutralColor">@color/black</item>
     </style>
 
